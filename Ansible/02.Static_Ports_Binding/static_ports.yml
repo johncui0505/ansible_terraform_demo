@@ -1,0 +1,36 @@
+---
+- hosts: aci
+  connection: local
+  gather_facts: False
+  vars:
+    apic_info: &apic_info
+      host:           "{{ aci_host }}"
+      user:           "{{ aci_user }}"
+      port:           "{{ aci_port }}"
+      password:       "{{ aci_password }}"
+      validate_certs: "{{ aci_valid_cert }}" 
+      use_ssl:        "{{ aci_use_ssl }}" 
+  tasks:
+    - name: Parse CSV
+      read_csv:
+        path: files/static_ports.csv
+        skipinitialspace: True
+      register: static_ports
+      delegate_to: localhost  
+    
+    - name: Create/Update list of interfaces using path level attributes
+      cisco.aci.aci_bulk_static_binding_to_epg:
+        <<: *apic_info
+        tenant: "{{ item.Tenant }}"
+        ap: "{{ item.Application_Profile }}"
+        epg: "{{ item.EPG_Name }}"
+        interface_configs:
+          - interface: "{{ item.Port_Name }}"
+            leafs: "{{ item.Leaf_ID }}"
+            pod: "{{ item.Pod_Name }}"  
+            encap_id: "{{ item.VLAN_ID }}"  
+            interface_mode: "{{ item.Mode }}" 
+            deploy_immediacy: "{{ item.Deployment_Immediacy }}"  
+        state: present # absent for deletion, present for creation
+      with_items: "{{ static_ports.list }}"
+      delegate_to: localhost

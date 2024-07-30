@@ -1,0 +1,46 @@
+---
+apic:
+  tenants:
+    - name: Terraform
+      application_profiles:
+        - name: VLANS
+          endpoint_groups:
+            - name: VLAN200
+              bridge_domain: 10.1.200.0_24
+              static_ports: 
+                - node_id: 101
+                  pod_id: 1
+                  port: 1
+                  vlan: 100
+                  mode: regular
+                  deployment_immediacy: immediate
+                - node_id: 101
+                  pod_id: 1
+                  port: 2
+                  vlan: 100
+                  mode: regular
+                  deployment_immediacy: immediate
+                - node_id: 101
+                  pod_id: 1
+                  port: 3
+                  vlan: 100
+                  mode: regular
+                  deployment_immediacy: immediate
+                - node_id: 101
+                  pod_id: 1
+                  port: 4
+                  vlan: 100
+                  mode: regular
+                  deployment_immediacy: immediate
+                - node_id: 101
+                  pod_id: 1
+                  port: 5
+                  vlan: 100
+                  mode: regular
+                  deployment_immediacy: immediate
+                - node_id: 101
+                  pod_id: 1
+                  port: 6
+                  vlan: 100
+                  mode: regular
+                  deployment_immediacy: immediate

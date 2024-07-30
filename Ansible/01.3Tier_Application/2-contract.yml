@@ -1,0 +1,114 @@
+---
+- hosts: aci
+  connection: local
+  gather_facts: no
+  vars_files:
+   - vars.yml
+
+  tasks:
+
+  - name: Add a new contract
+    aci_contract:
+     host: "{{ aci_host }}"
+     username: "{{ aci_user }}"
+     password: "{{ aci_password }}"
+     use_ssl: "{{ aci_use_ssl }}"
+     validate_certs: "{{ aci_valid_cert }}"
+     tenant: "{{ tenant }}"
+     contract: web_to_db
+     description: Communication between web-servers and database
+     scope: application-profile
+     state: present
+    delegate_to: localhost
+
+  - name: Add a new contract subject
+    aci_contract_subject:
+      host: "{{ aci_host }}"
+      username: "{{ aci_user }}"
+      password: "{{ aci_password }}"
+      use_ssl: "{{ aci_use_ssl }}"
+      validate_certs: "{{ aci_valid_cert }}"
+      tenant: "{{ tenant }}"
+      contract: web_to_db
+      subject: default
+      description: test
+      reverse_filter: yes
+      priority: level1
+      dscp: unspecified
+      state: present
+    register: query_result
+
+  - name: Add a new filter to a tenant
+    aci_filter:
+      host: "{{ aci_host }}"
+      username: "{{ aci_user }}"
+      password: "{{ aci_password }}"
+      use_ssl: "{{ aci_use_ssl }}"
+      validate_certs: "{{ aci_valid_cert }}"
+      tenant: "{{ tenant }}"
+      filter: web_filter
+      description: Filter for web protocols
+      state: present
+    delegate_to: localhost
+
+
+  - name: Add filter entry to subject
+    aci_filter_entry:
+      host: "{{ aci_host }}"
+      username: "{{ aci_user }}"
+      password: "{{ aci_password }}"
+      use_ssl: "{{ aci_use_ssl }}"
+      validate_certs: "{{ aci_valid_cert }}"
+      tenant: "{{ tenant }}"
+      state: present
+      entry: entry
+      ether_type: ip
+      ip_protocol: tcp
+      filter: web_filter
+      descr: Add filter entry to subject
+    delegate_to: localhost
+
+  - name: Add a new contract subject to filer binding
+    aci_contract_subject_to_filter:
+      host: "{{ aci_host }}"
+      username: "{{ aci_user }}"
+      password: "{{ aci_password }}"
+      use_ssl: "{{ aci_use_ssl }}"
+      validate_certs: "{{ aci_valid_cert }}"
+      tenant: "{{ tenant }}"
+      contract: web_to_db
+      subject: default
+      filter: web_filter
+      log: log
+      state: present
+    delegate_to: localhost
+
+  - name: Add a new contract to EPG binding
+    aci_epg_to_contract:
+      host: "{{ aci_host }}"
+      username: "{{ aci_user }}"
+      password: "{{ aci_password }}"
+      use_ssl: "{{ aci_use_ssl }}"
+      validate_certs: "{{ aci_valid_cert }}"
+      tenant: "{{ tenant }}"
+      ap: "{{ ap }}"
+      epg: sample1_epg
+      contract: web_to_db
+      contract_type: provider
+      state: present
+    delegate_to: localhost
+
+  - name: Add a new contract to EPG binding
+    aci_epg_to_contract:
+      host: "{{ aci_host }}"
+      username: "{{ aci_user }}"
+      password: "{{ aci_password }}"
+      use_ssl: "{{ aci_use_ssl }}"
+      validate_certs: "{{ aci_valid_cert }}"
+      tenant: "{{ tenant }}"
+      ap: "{{ ap }}"
+      epg: sample2_epg
+      contract: web_to_db
+      contract_type: consumer
+      state: present
+    delegate_to: localhost

@@ -1,0 +1,19 @@
+tenant: "Ansible_Sample_tn"
+vrf: "VRF_1"
+bd: "BD_1"
+ap: "sample_app"
+gateway:
+  - 192.168.11.1
+  - 192.168.12.1
+  - 192.168.13.1
+  - 192.168.14.1
+  - 192.168.15.1
+  - 192.168.16.1
+
+epg:
+  - sample1_epg
+  - sample2_epg
+  - sample3_epg
+  - sample4_epg
+  - sample5_epg
+  - sample6_epg

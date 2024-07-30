@@ -1,0 +1,92 @@
+---
+- hosts: aci
+  connection: local
+  gather_facts: no
+  vars_files:
+   - vars.yml
+
+  tasks:
+  - name: create tenant
+    aci_tenant:
+     host: "{{ aci_host }}"
+     username: "{{ aci_user }}"
+     password: "{{ aci_password }}"
+     use_ssl: "{{ aci_use_ssl }}"
+     validate_certs: "{{ aci_valid_cert }}"
+     tenant: "{{ tenant }}"
+     description: tenant created by Ansible
+     state: present
+     
+  - name: create vrf
+    aci_vrf:
+     host: "{{ aci_host }}"
+     username: "{{ aci_user }}"
+     password: "{{ aci_password }}"
+     use_ssl: "{{ aci_use_ssl }}"
+     validate_certs: "{{ aci_valid_cert }}"
+     vrf: "{{ vrf }}"
+     tenant: "{{ tenant }}"
+     description: vrf created by ansible
+     policy_control_preference: enforced
+     policy_control_direction: ingress
+     state: present
+
+  - name: Add Bridge Domain
+    aci_bd:
+     host: "{{ aci_host }}"
+     username: "{{ aci_user }}"
+     password: "{{ aci_password }}"
+     use_ssl: "{{ aci_use_ssl }}"
+     validate_certs: "{{ aci_valid_cert }}"
+     tenant: "{{ tenant }}"
+     mac_address: 00:22:BD:F8:19:FE
+     bd: "{{ item }}"
+     vrf: "{{ vrf }}"
+     description: bridge domain created by Ansible
+     state: present
+    with_items: "{{ bd }}"
+    delegate_to: localhost
+
+  - name: add a subnet with options
+    aci_bd_subnet:
+     host: "{{ aci_host }}"
+     username: "{{ aci_user }}"
+     password: "{{ aci_password }}"
+     use_ssl: "{{ aci_use_ssl }}"
+     validate_certs: "{{ aci_valid_cert }}"
+     tenant: "{{ tenant }}"
+     bd: "{{ bd }}"
+     subnet_name: subnets
+     description: first subnet
+     gateway: "{{ item }}"
+     mask: 24
+     state: present
+    with_items: "{{ gateway }}"
+    delegate_to: localhost
+
+  - name: Add a new ap
+    aci_ap:
+     host: "{{ aci_host }}"
+     username: "{{ aci_user }}"
+     password: "{{ aci_password }}"
+     use_ssl: "{{ aci_use_ssl }}"
+     validate_certs: "{{ aci_valid_cert }}"
+     tenant: "{{ tenant }}"
+     ap: "{{ ap }}"
+     description: Application Profile
+     state: present
+
+  - name: Add a new epg
+    aci_epg:
+     host: "{{ aci_host }}"
+     username: "{{ aci_user }}"
+     password: "{{ aci_password }}"
+     use_ssl: "{{ aci_use_ssl }}"
+     validate_certs: "{{ aci_valid_cert }}"
+     tenant: "{{ tenant }}"
+     ap: "{{ ap }}"
+     epg: "{{ item }}"
+     description: epgs
+     state: present
+     bd: "{{ bd }}"
+    with_items: "{{ epg }}"

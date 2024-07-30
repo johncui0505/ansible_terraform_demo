@@ -1,0 +1,54 @@
+---
+apic:
+  tenants:
+    - name: Terraform
+
+      vrfs:
+        - name: DEV-VRF
+
+      bridge_domains:
+        - name: 10.1.200.0_24
+          vrf: DEV-VRF
+          subnets:
+            - ip: 10.1.200.1/24
+
+        - name: 10.1.201.0_24
+          vrf: DEV-VRF
+          subnets:
+            - ip: 10.1.201.1/24
+
+        - name: 10.1.202.0_24
+          vrf: DEV-VRF
+          subnets:
+            - ip: 10.1.202.1/24
+
+      application_profiles:
+        - name: VLANS
+          endpoint_groups:
+            - name: VLAN200
+              bridge_domain: 10.1.200.0_24
+              static_ports: 
+                - node_id: 101
+                  pod_id: 1
+                  port: 1
+                  vlan: 100
+                  mode: regular
+                  deployment_immediacy: immediate
+                - node_id: 101
+                  pod_id: 1
+                  port: 2
+                  vlan: 100
+                  mode: regular
+                  deployment_immediacy: immediate
+                - node_id: 101
+                  pod_id: 1
+                  port: 3
+                  vlan: 100
+                  mode: regular
+                  deployment_immediacy: immediate
+
+            - name: VLAN201
+              bridge_domain: 10.1.201.0_24
+
+            - name: VLAN202
+              bridge_domain: 10.1.202.0_24
