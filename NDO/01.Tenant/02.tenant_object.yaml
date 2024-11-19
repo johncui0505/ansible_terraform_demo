@@ -1,0 +1,88 @@
+---
+- hosts: nd
+  gather_facts: no
+  vars_files:
+    - external_vars.yml
+  vars:
+    template_info: &template_info
+      schema: "{{ schema }}"
+      template: "{{ template }}"
+      validate_certs: false
+  tasks:
+  - name: Add a new VRF
+    cisco.mso.mso_schema_template_vrf:
+      <<: *template_info
+      vrf: "{{ vrf }}"
+      state: present 
+   
+  - name: Add a new BD
+    cisco.mso.mso_schema_template_bd:
+      <<: *template_info
+      bd: "{{ item.bd }}"
+      vrf:
+        name: "{{ vrf }}"
+      state: present
+    with_items: "{{ bd_subnets }}"
+
+  - name: Add a new site BD subnet
+    cisco.mso.mso_schema_template_bd_subnet:
+      <<: *template_info
+      bd: "{{ item.bd }}"
+      subnet: "{{ item.subnet }}"
+      state: present
+    with_items: "{{ bd_subnets }}"
+
+  - name: Add a new ANP
+    cisco.mso.mso_schema_template_anp:
+      <<: *template_info
+      anp: "{{ anp }}"
+      state: present
+ 
+  - name: Add a new EPG
+    cisco.mso.mso_schema_template_anp_epg:
+      <<: *template_info
+      anp: "{{ anp }}"
+      epg: "{{ item.name }}"
+      bd:
+        name: "{{ item.bd }}"
+      vrf:
+        name: "{{ vrf }}"
+      state: present
+    with_items: "{{ epg }}"
+
+  - name: Add a new filter entry
+    cisco.mso.mso_schema_template_filter_entry:
+      <<: *template_info
+      filter: "{{ item.name }}"
+      entry: test 
+      state: present
+    with_items: "{{ filter }}"
+
+  - name: Add a new contract filter
+    cisco.mso.mso_schema_template_contract_filter:
+      <<: *template_info
+      contract: "{{ item.name }}"
+      contract_scope: global
+      filter: "{{ item.filter }}"
+      state: present
+    with_items: "{{ contract }}"
+    
+  - name: Add contracts to EPGs
+    cisco.mso.mso_schema_template_anp_epg_contract:
+      <<: *template_info
+      anp: "{{ anp }}"
+      epg: "{{ item.0.name }}"
+      contract:
+        name: "{{ item.1.name }}"
+        type: "{{ item.1.contract_type }}"
+      state: present
+    with_subelements:
+      - "{{ epg }}"
+      - contract
+
+  - name: Add a new site to a schema
+    cisco.mso.mso_schema_site:
+      <<: *template_info
+      site: "{{ item.name }}"
+      state: present
+    with_items: "{{ sites }}"

@@ -1,0 +1,49 @@
+---
+#
+schema: NDO_Schema
+template: NDO_Template
+sites: 
+  - name: "on-prem"
+site1: on-prem
+
+#
+vrf: VRF1-ansible
+#
+bd_subnets:
+  - bd: BD1-ansible
+    subnet: 11.11.11.1/24
+  - bd: BD2-ansible
+    subnet: 22.22.22.1/24
+  - bd: BD3-ansible
+    subnet: 33.33.33.1/24
+#
+anp: ANP1
+#
+epg:
+  - name: web-ansible
+    bd: BD1-ansible
+    contract: 
+      - name: web2app
+        contract_type: consumer
+  - name: app-ansible
+    bd: BD2-ansible
+    contract: 
+      - name: web2app
+        contract_type: provider
+      - name: app2db
+        contract_type: consumer    
+  - name: db-ansible
+    bd: BD3-ansible
+    contract: 
+      - name: app2db
+        contract_type: provider
+#
+filter: 
+  - name: filter1
+  - name: filter2
+#
+contract:
+  - name: web2app
+    filter: filter1
+  - name: app2db
+    filter: filter2

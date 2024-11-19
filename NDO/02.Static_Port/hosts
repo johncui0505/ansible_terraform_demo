@@ -1,0 +1,9 @@
+[nd]
+nd1 ansible_host=198.18.134.200 ansible_user=admin ansible_ssh_pass="C1sco12345"
+
+[nd:vars]
+ansible_connection=ansible.netcommon.httpapi
+ansible_network_os=cisco.nd.nd
+ansible_httpapi_validate_certs=False
+ansible_httpapi_use_ssl=True
+ansible_httpapi_use_proxy=False

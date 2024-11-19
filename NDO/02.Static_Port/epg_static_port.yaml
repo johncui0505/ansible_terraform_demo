@@ -1,0 +1,35 @@
+---
+- hosts: nd
+  gather_facts: no
+  vars:
+    template_info: &template_info
+      schema: NDO_Schema
+      template: NDO_Template
+      validate_certs: false
+  tasks:
+  - name: Parse CSV
+    read_csv:
+      path: static_ports.csv
+      skipinitialspace: True
+    register: static_ports
+    delegate_to: localhost
+
+  - name: Loop through items and perform tasks
+    debug:
+      msg: "{{ item.Tenant }}"
+    with_items: "{{ static_ports.list }}"
+
+  - name: Add a new static port to a site EPG
+    cisco.mso.mso_schema_site_anp_epg_staticport:
+      <<: *template_info
+      site: "{{ item.Site }}"
+      anp: "{{ item.Application_Profile }}"
+      epg: "{{ item.EPG_Name }}"
+      type: port
+      pod: "{{ item.Pod_Name }}"
+      leaf: "{{ item.Leaf_ID }}"
+      path: "{{ item.Port_Name }}"
+      vlan: "{{ item.VLAN_ID }}"
+      deployment_immediacy: "{{ item.Deployment_Immediacy }}"
+      state: present
+    with_items: "{{ static_ports.list }}"

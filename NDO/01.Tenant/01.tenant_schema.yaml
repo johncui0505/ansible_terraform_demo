@@ -1,0 +1,27 @@
+---
+- hosts: nd
+  gather_facts: no
+
+  tasks:
+    - name: Add a new tenant
+      cisco.mso.mso_tenant:
+        validate_certs: false
+        tenant: NDO_Tenant
+        description: NDO Tenant
+        sites:
+          - on-prem
+        state: present
+    
+    - name: Create schema
+      cisco.mso.mso_schema:
+        validate_certs: false
+        schema: NDO_Schema
+        description: NDO Schema
+        state: present
+    
+    - name: Add a new template to a schema
+      cisco.mso.mso_schema_template:
+        tenant: NDO_Tenant
+        schema: NDO_Schema
+        template: NDO_Template
+        state: present
