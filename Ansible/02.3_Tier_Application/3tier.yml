@@ -4,16 +4,79 @@
   gather_facts: no
   vars_files:
    - vars.yml
+  vars:
+    apic_info: &apic_info
+      host:           "{{ aci_host }}"
+      user:           "{{ aci_user }}"
+      password:       "{{ aci_password }}"
+      validate_certs: "{{ aci_valid_cert }}" 
+      use_ssl:        "{{ aci_use_ssl }}" 
 
   tasks:
+  - name: Create tenant
+    aci_tenant:
+     <<: *apic_info
+     tenant: "{{ tenant }}"
+     description: tenant created by Ansible
+     state: present
+     
+  - name: Create vrf
+    aci_vrf:
+     <<: *apic_info
+     vrf: "{{ vrf }}"
+     tenant: "{{ tenant }}"
+     description: vrf created by ansible
+     policy_control_preference: enforced
+     policy_control_direction: ingress
+     state: present
+
+  - name: Add Bridge Domain
+    aci_bd:
+     <<: *apic_info
+     tenant: "{{ tenant }}"
+     mac_address: 00:22:BD:F8:19:FE
+     bd: "{{ item }}"
+     vrf: "{{ vrf }}"
+     description: bridge domain created by Ansible
+     state: present
+    with_items: "{{ bd }}"
+    delegate_to: localhost
+
+  - name: add a subnet with options
+    aci_bd_subnet:
+     <<: *apic_info
+     tenant: "{{ tenant }}"
+     bd: "{{ bd }}"
+     subnet_name: subnets
+     description: first subnet
+     gateway: "{{ item }}"
+     mask: 24
+     state: present
+    with_items: "{{ gateway }}"
+    delegate_to: localhost
+
+  - name: Add a new ap
+    aci_ap:
+     <<: *apic_info
+     tenant: "{{ tenant }}"
+     ap: "{{ ap }}"
+     description: Application Profile
+     state: present
+
+  - name: Add a new epg
+    aci_epg:
+     <<: *apic_info
+     tenant: "{{ tenant }}"
+     ap: "{{ ap }}"
+     epg: "{{ item }}"
+     description: epgs
+     state: present
+     bd: "{{ bd }}"
+    with_items: "{{ epg }}"
 
   - name: Add a new contract
     aci_contract:
-     host: "{{ aci_host }}"
-     username: "{{ aci_user }}"
-     password: "{{ aci_password }}"
-     use_ssl: "{{ aci_use_ssl }}"
-     validate_certs: "{{ aci_valid_cert }}"
+     <<: *apic_info
      tenant: "{{ tenant }}"
      contract: web_to_db
      description: Communication between web-servers and database
@@ -23,11 +86,7 @@
 
   - name: Add a new contract subject
     aci_contract_subject:
-      host: "{{ aci_host }}"
-      username: "{{ aci_user }}"
-      password: "{{ aci_password }}"
-      use_ssl: "{{ aci_use_ssl }}"
-      validate_certs: "{{ aci_valid_cert }}"
+      <<: *apic_info
       tenant: "{{ tenant }}"
       contract: web_to_db
       subject: default
@@ -40,11 +99,7 @@
 
   - name: Add a new filter to a tenant
     aci_filter:
-      host: "{{ aci_host }}"
-      username: "{{ aci_user }}"
-      password: "{{ aci_password }}"
-      use_ssl: "{{ aci_use_ssl }}"
-      validate_certs: "{{ aci_valid_cert }}"
+      <<: *apic_info
       tenant: "{{ tenant }}"
       filter: web_filter
       description: Filter for web protocols
@@ -54,11 +109,7 @@
 
   - name: Add filter entry to subject
     aci_filter_entry:
-      host: "{{ aci_host }}"
-      username: "{{ aci_user }}"
-      password: "{{ aci_password }}"
-      use_ssl: "{{ aci_use_ssl }}"
-      validate_certs: "{{ aci_valid_cert }}"
+      <<: *apic_info
       tenant: "{{ tenant }}"
       state: present
       entry: entry
@@ -70,11 +121,7 @@
 
   - name: Add a new contract subject to filer binding
     aci_contract_subject_to_filter:
-      host: "{{ aci_host }}"
-      username: "{{ aci_user }}"
-      password: "{{ aci_password }}"
-      use_ssl: "{{ aci_use_ssl }}"
-      validate_certs: "{{ aci_valid_cert }}"
+      <<: *apic_info
       tenant: "{{ tenant }}"
       contract: web_to_db
       subject: default
@@ -85,11 +132,7 @@
 
   - name: Add a new contract to EPG binding
     aci_epg_to_contract:
-      host: "{{ aci_host }}"
-      username: "{{ aci_user }}"
-      password: "{{ aci_password }}"
-      use_ssl: "{{ aci_use_ssl }}"
-      validate_certs: "{{ aci_valid_cert }}"
+      <<: *apic_info
       tenant: "{{ tenant }}"
       ap: "{{ ap }}"
       epg: sample1_epg
@@ -100,11 +143,7 @@
 
   - name: Add a new contract to EPG binding
     aci_epg_to_contract:
-      host: "{{ aci_host }}"
-      username: "{{ aci_user }}"
-      password: "{{ aci_password }}"
-      use_ssl: "{{ aci_use_ssl }}"
-      validate_certs: "{{ aci_valid_cert }}"
+      <<: *apic_info
       tenant: "{{ tenant }}"
       ap: "{{ ap }}"
       epg: sample2_epg
